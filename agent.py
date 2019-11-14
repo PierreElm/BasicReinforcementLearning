@@ -47,6 +47,7 @@ class Agent:
     # Function to check whether the agent has reached the end of an episode
     def has_finished_episode(self):
         if self.num_steps_taken % self.episode_length == 0:
+            print(self.epsilon)
             return True
         else:
             return False
@@ -57,22 +58,20 @@ class Agent:
         #action = np.random.uniform(low=-0.01, high=0.01, size=2).astype(np.float32)
         # Choose an action with e-greedy policy
         if discrete_action is None:
-            if np.random.uniform(0, 1) <= self.epsilon:
+            if np.random.uniform(0, 1) <= self.epsilon or self.state is None:
                 discrete_action = np.random.randint(0, 4, 1)[0]
                 # Store the discrete action
                 self.action = discrete_action
-                # Decrease epsilon
-                self.epsilon = max(0, self.epsilon - self.delta)
                 # Convert discrete action into continuous action
                 action = self.discrete_action_to_continuous(discrete_action)
-                print(self.epsilon)
+                # Decrease epsilon
+                self.epsilon = max(0, self.epsilon - self.delta)
             else:
                 action = self.get_greedy_action(self.state)
 
         # Update the number of steps which the agent has taken
         self.num_steps_taken += 1
         # Store the state; this will be used later, when storing the transition
-        self.last_state = self.state
         self.state = state
 
         return action
@@ -98,10 +97,11 @@ class Agent:
         # We add the transition to the replay buffer
         self.replay_buffer.append_transition(transition)
         # We get a sample of transition
-        transition = self.replay_buffer.sample_random_replay_batch(self.batch_size)
+        transition = self.replay_buffer.sample_prioritised_replay_batch(self.batch_size)
         # Train network with this transition
         if transition is not None:
-            loss, weight = self.dqn.train_q_network(transition)
+            loss, magnitude = self.dqn.train_q_network(transition)
+            self.replay_buffer.update_weights(magnitude)
         # Every 25 steps, we update the target network
         if self.num_steps_taken % 100 == 0:
             self.dqn.update_target_network()

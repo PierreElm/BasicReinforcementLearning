@@ -14,7 +14,7 @@ if __name__ == "__main__":
 
     # Create a random seed, which will define the environment
     random_seed = int(time.time())
-    np.random.seed(random_seed)
+    np.random.seed(123456)
 
     # Create a random environment
     environment = Environment(magnification=500)
@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     # Determine the time at which training will stop, i.e. in 10 minutes (600 seconds) time
     start_time = time.time()
-    end_time = start_time + 300
+    end_time = start_time + 600
 
     # Train the agent, until the time is up
     while time.time() < end_time:
