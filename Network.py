@@ -11,14 +11,16 @@ class Network(torch.nn.Module):
 
         # Define the network layers. This example network has two hidden layers, each with 100 units.
         self.layer_1 = torch.nn.Linear(in_features=input_dimension, out_features=100)
-        self.layer_2 = torch.nn.Linear(in_features=100, out_features=100)
+        self.layer_2 = torch.nn.Linear(in_features=100, out_features=200)
+        self.layer_3 = torch.nn.Linear(in_features=200, out_features=100)
         self.output_layer = torch.nn.Linear(in_features=100, out_features=output_dimension)
 
     # Function which sends some input data through the network and returns the network's output.
     def forward(self, input):
         layer_1_output = torch.nn.functional.relu(self.layer_1(input))
         layer_2_output = torch.nn.functional.relu(self.layer_2(layer_1_output))
-        output = self.output_layer(layer_2_output)
+        layer_3_output = torch.nn.functional.relu(self.layer_3(layer_2_output))
+        output = self.output_layer(layer_3_output)
         return output
 
 
@@ -48,14 +50,14 @@ class DQN:
         # Set all the gradients stored in the optimiser to zero.
         self.optimiser.zero_grad()
         # Calculate the loss for this transition.
-        loss = self._calculate_loss(transition)
+        loss, weight = self._calculate_loss(transition)
         # Compute the gradients based on this loss, i.e. the gradients of the loss with respect to the Q-network
         # parameters.
         loss.backward()
         # Take one gradient step to update the Q-network.
         self.optimiser.step()
         # Return the loss as a scalar
-        return loss.item()
+        return loss.item(), weight
 
     # Function to calculate the loss for a particular transition.
     def _calculate_loss(self, transition):
@@ -74,6 +76,8 @@ class DQN:
         network_prediction = self.q_network.forward(state_tensor)
         predicted_q_value = torch.gather(network_prediction, 1, torch.tensor(action))
 
+        weight = (q_value_tensor - predicted_q_value).detach().numpy()
+
         # Return the loss
-        return torch.nn.MSELoss()(predicted_q_value, q_value_tensor)
+        return torch.nn.MSELoss()(predicted_q_value, q_value_tensor), weight
 

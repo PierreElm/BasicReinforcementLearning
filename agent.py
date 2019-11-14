@@ -26,7 +26,7 @@ class Agent:
     # Function to initialise the agent
     def __init__(self):
         # Set the episode length (you will need to increase this)
-        self.episode_length = 500
+        self.episode_length = 250
         # Reset the total number of steps which the agent has taken
         self.num_steps_taken = 0
         # The state variable stores the latest state of the agent in the environment
@@ -38,11 +38,11 @@ class Agent:
         # Replay buffer
         self.replay_buffer = ReplayBuffer()
         # Batch size
-        self.batch_size = 50
+        self.batch_size = 150
         # Epsilon
         self.epsilon = 1
         # Delta
-        self.delta = 0.00001
+        self.delta = 0.0001
 
     # Function to check whether the agent has reached the end of an episode
     def has_finished_episode(self):
@@ -57,33 +57,36 @@ class Agent:
         #action = np.random.uniform(low=-0.01, high=0.01, size=2).astype(np.float32)
         # Choose an action with e-greedy policy
         if discrete_action is None:
-            if np.random.uniform(0, 1) <= self.epsilon or self.dqn is None:
+            if np.random.uniform(0, 1) <= self.epsilon:
                 discrete_action = np.random.randint(0, 4, 1)[0]
+                # Store the discrete action
+                self.action = discrete_action
                 # Decrease epsilon
-                self.epsilon = max(0.15, self.epsilon - self.delta)
+                self.epsilon = max(0, self.epsilon - self.delta)
+                # Convert discrete action into continuous action
+                action = self.discrete_action_to_continuous(discrete_action)
+                print(self.epsilon)
             else:
-                discrete_action = self.get_greedy_action(self.state)
+                action = self.get_greedy_action(self.state)
 
-        # Convert discrete action into continuous action
-        action = self.discrete_action_to_continuous(discrete_action)
         # Update the number of steps which the agent has taken
         self.num_steps_taken += 1
         # Store the state; this will be used later, when storing the transition
+        self.last_state = self.state
         self.state = state
-        # Store the action; this will be used later, when storing the transition
-        self.action = discrete_action
+
         return action
 
     # Function to convert discrete action (as used by a DQN) to a continuous action (as used by the environment).
     def discrete_action_to_continuous(self, discrete_action):
         if discrete_action == 0:  # Move right
-            continuous_action = np.array([0.015, 0], dtype=np.float32)
+            continuous_action = np.array([0.02, 0], dtype=np.float32)
         elif discrete_action == 1:  # Move left
-            continuous_action = np.array([-0.015, 0], dtype=np.float32)
+            continuous_action = np.array([-0.02, 0], dtype=np.float32)
         elif discrete_action == 2:  # Move up
-            continuous_action = np.array([0, 0.015], dtype=np.float32)
+            continuous_action = np.array([0, 0.02], dtype=np.float32)
         elif discrete_action == 3:  # Move down
-            continuous_action = np.array([0, -0.015], dtype=np.float32)
+            continuous_action = np.array([0, -0.02], dtype=np.float32)
         return continuous_action
 
     # Function to set the next state and distance, which resulted from applying action self.action at state self.state
@@ -98,13 +101,15 @@ class Agent:
         transition = self.replay_buffer.sample_random_replay_batch(self.batch_size)
         # Train network with this transition
         if transition is not None:
-            self.dqn.train_q_network(transition)
+            loss, weight = self.dqn.train_q_network(transition)
         # Every 25 steps, we update the target network
-        if self.num_steps_taken % 15 == 0:
+        if self.num_steps_taken % 100 == 0:
             self.dqn.update_target_network()
 
     # Function that compute the reward
     def compute_reward(self, distance_to_goal):
+        if distance_to_goal < 0.1:
+            return 2 - distance_to_goal
         return 1 - distance_to_goal
 
     # Function to get the greedy action for a particular state
@@ -112,4 +117,8 @@ class Agent:
         state_tensor = torch.unsqueeze(torch.tensor(state), 0)
         predicted_values = self.dqn.q_network.forward(state_tensor).cpu().detach().numpy()
         discrete_action = np.argmax(predicted_values)
-        return discrete_action
+        # Store the discrete action
+        self.action = discrete_action
+        # Convert discrete action into continuous action
+        action = self.discrete_action_to_continuous(discrete_action)
+        return action

@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     # Determine the time at which training will stop, i.e. in 10 minutes (600 seconds) time
     start_time = time.time()
-    end_time = start_time + 600
+    end_time = start_time + 300
 
     # Train the agent, until the time is up
     while time.time() < end_time:
@@ -52,11 +52,13 @@ if __name__ == "__main__":
     for step_num in range(100):
         action = agent.get_greedy_action(state)
         next_state, distance_to_goal = environment.step(state, action)
+        print(state)
         # The agent must achieve a maximum distance of 0.03 for use to consider it "reaching the goal"
         if distance_to_goal < 0.03:
             has_reached_goal = True
             break
         state = next_state
+    environment.show(state)
 
     # Print out the result
     if has_reached_goal:

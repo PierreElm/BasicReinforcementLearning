@@ -7,11 +7,24 @@ class ReplayBuffer:
 
     # Function to initialise a ReplayBuffer object.
     def __init__(self):
-        self.collection_deque = collections.deque(maxlen=1000000)
+        self.collection_deque = collections.deque(maxlen=15000)  # Collection of all transitions
+        self.weight_deque = collections.deque(maxlen=15000)  # Collection of weight of transitions
+        self.last_indexes = []  # Last indexes used in mini batch
+        self.epsilon = 0.001
+        self.alpha = 1
+        self.max_value = 0
+        self.total_weight = 0
 
     # Append a transition to the deque.
-    def append_transition(self, transition):
+    def append_transition(self, transition, loss=None):
         self.collection_deque.append(transition)
+
+        self.weight_deque.append(loss)
+
+    def sample_prioritised_replay_batch(self, size):
+        if len(self.collection_deque) < size:
+            return None
+
 
     # Sample a random batch of transitions from the replay buffer.
     def sample_random_replay_batch(self, size):
