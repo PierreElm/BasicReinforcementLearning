@@ -26,7 +26,7 @@ class Agent:
     # Function to initialise the agent
     def __init__(self):
         # Set the episode length (you will need to increase this)
-        self.episode_length = 250
+        self.episode_length = 300
         # Reset the total number of steps which the agent has taken
         self.num_steps_taken = 0
         # The state variable stores the latest state of the agent in the environment
@@ -38,11 +38,11 @@ class Agent:
         # Replay buffer
         self.replay_buffer = ReplayBuffer()
         # Batch size
-        self.batch_size = 150
+        self.batch_size = 400
         # Epsilon
         self.epsilon = 1
         # Delta
-        self.delta = 0.0001
+        self.delta = 0.00008
         self.last_distance = None
         self.last_state = None
 

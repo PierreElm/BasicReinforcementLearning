@@ -25,7 +25,6 @@ class ReplayBuffer:
         if len(self.collection_deque) < size:
             return None
 
-
     # Sample a random batch of transitions from the replay buffer.
     def sample_random_replay_batch(self, size):
         if len(self.collection_deque) < size:
