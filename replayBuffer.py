@@ -7,8 +7,8 @@ class ReplayBuffer:
 
     # Function to initialise a ReplayBuffer object.
     def __init__(self):
-        self.collection_deque = collections.deque(maxlen=15000)  # Collection of all transitions
-        self.weight_deque = collections.deque(maxlen=15000)  # Collection of weight of transitions
+        self.collection_deque = collections.deque(maxlen=10000)  # Collection of all transitions
+        self.weight_deque = collections.deque(maxlen=10000)  # Collection of weight of transitions
         self.last_indexes = []  # Last indexes used in mini batch
         self.probability = None
 
@@ -23,6 +23,7 @@ class ReplayBuffer:
     def append_transition(self, transition):
         self.collection_deque.append(transition)
         self.weight_deque.append(self.max_weight)
+        self.total_weight += self.max_weight
 
     def sample_prioritised_replay_batch(self, size):
         if len(self.collection_deque) < size:
@@ -31,26 +32,25 @@ class ReplayBuffer:
             return self.sample_random_replay_batch(size)
         else:
             self.last_indexes = np.argpartition(self.probability, -size)[-size:]
-
+            self.weight_selected = 0
             for index in self.last_indexes:
                 self.weight_selected += self.weight_deque[index]
             return self.get_transition_batch(self.last_indexes)
 
     def update_weights(self, magnitude):
-        old_max_weight = self.max_weight
+        old_max_weight = self.total_weight
         new_weight_selected = 0
         i = 0
         for index in self.last_indexes:
-            weight = np.abs(magnitude[i]) + self.epsilon
+            weight = (np.abs(magnitude[i]) + self.epsilon)**2
             self.max_weight = max(self.max_weight, weight)
             self.weight_deque[index] = weight
-            new_weight_selected += weight**self.alpha
+            new_weight_selected += weight
             i += 1
         self.total_weight = old_max_weight + (new_weight_selected - self.weight_selected)
-
         self.probability = np.empty([len(self.collection_deque)])
         for i in range(0, len(self.collection_deque)):
-            self.probability[i] = self.weight_deque[i]**self.alpha / self.total_weight
+            self.probability[i] = self.weight_deque[i] / self.total_weight
 
     # Sample a random batch of transitions from the replay buffer.
     def sample_random_replay_batch(self, size):

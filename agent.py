@@ -109,7 +109,7 @@ class Agent:
     # Function that compute the reward
     def compute_reward(self, distance_to_goal):
         if distance_to_goal < 0.1:
-            return 2 - distance_to_goal
+            return 3 - distance_to_goal
         return 1 - distance_to_goal
 
     # Function to get the greedy action for a particular state
