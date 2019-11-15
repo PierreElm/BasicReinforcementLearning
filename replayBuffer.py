@@ -13,8 +13,8 @@ class ReplayBuffer:
         self.probability = None
 
         # Metrics used for prioritised replay
-        self.epsilon = 0.001
-        self.alpha = 2
+        self.epsilon = 0.01
+        self.alpha = 1
         self.max_weight = 0
         self.weight_selected = 0
         self.total_weight = 0
@@ -31,24 +31,25 @@ class ReplayBuffer:
         elif self.probability is None:
             return self.sample_random_replay_batch(size)
         else:
-            self.last_indexes = np.argpartition(self.probability, -size)[-size:]
+            #self.last_indexes = np.argpartition(self.probability, -size)[-size:]
+            self.last_indexes = np.random.choice(len(self.probability), size, p=self.probability, replace=False)
             self.weight_selected = 0
             for index in self.last_indexes:
                 self.weight_selected += self.weight_deque[index]
             return self.get_transition_batch(self.last_indexes)
 
     def update_weights(self, magnitude):
-        old_max_weight = self.total_weight
         new_weight_selected = 0
         i = 0
         for index in self.last_indexes:
-            weight = (np.abs(magnitude[i]) + self.epsilon)**2
+            weight = ((np.abs(magnitude[i]) + self.epsilon)**self.alpha)[0]
             self.max_weight = max(self.max_weight, weight)
             self.weight_deque[index] = weight
             new_weight_selected += weight
             i += 1
-        self.total_weight = old_max_weight + (new_weight_selected - self.weight_selected)
+        self.total_weight += (new_weight_selected - self.weight_selected)
         self.probability = np.empty([len(self.collection_deque)])
+
         for i in range(0, len(self.collection_deque)):
             self.probability[i] = self.weight_deque[i] / self.total_weight
 
@@ -56,7 +57,7 @@ class ReplayBuffer:
     def sample_random_replay_batch(self, size):
         if len(self.collection_deque) < size:
             return None
-        self.last_indexes = np.random.choice(len(self.collection_deque), size)
+        self.last_indexes = np.random.choice(len(self.collection_deque), size, replace=False)
         return self.get_transition_batch(self.last_indexes)
 
     # Return a batch of transition
