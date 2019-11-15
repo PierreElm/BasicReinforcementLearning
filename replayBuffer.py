@@ -7,8 +7,8 @@ class ReplayBuffer:
 
     # Function to initialise a ReplayBuffer object.
     def __init__(self):
-        self.collection_deque = collections.deque(maxlen=10000)  # Collection of all transitions
-        self.weight_deque = collections.deque(maxlen=10000)  # Collection of weight of transitions
+        self.collection_deque = collections.deque(maxlen=2500)  # Collection of all transitions
+        self.weight_deque = collections.deque(maxlen=2500)  # Collection of weight of transitions
         self.last_indexes = []  # Last indexes used in mini batch
         self.probability = None
 
@@ -32,6 +32,7 @@ class ReplayBuffer:
             return self.sample_random_replay_batch(size)
         else:
             #self.last_indexes = np.argpartition(self.probability, -size)[-size:]
+            print(np.sum(self.probability))
             self.last_indexes = np.random.choice(len(self.probability), size, p=self.probability, replace=False)
             self.weight_selected = 0
             for index in self.last_indexes:
