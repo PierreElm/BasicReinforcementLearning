@@ -14,7 +14,7 @@ class ReplayBuffer:
 
         # Metrics used for prioritised replay
         self.epsilon = 0.001
-        self.alpha = 1
+        self.alpha = 2
         self.max_weight = 0
         self.weight_selected = 0
         self.total_weight = 0
@@ -31,6 +31,7 @@ class ReplayBuffer:
             return self.sample_random_replay_batch(size)
         else:
             self.last_indexes = np.argpartition(self.probability, -size)[-size:]
+
             for index in self.last_indexes:
                 self.weight_selected += self.weight_deque[index]
             return self.get_transition_batch(self.last_indexes)
@@ -40,7 +41,7 @@ class ReplayBuffer:
         new_weight_selected = 0
         i = 0
         for index in self.last_indexes:
-            weight = magnitude[i] + self.epsilon
+            weight = np.abs(magnitude[i]) + self.epsilon
             self.max_weight = max(self.max_weight, weight)
             self.weight_deque[index] = weight
             new_weight_selected += weight**self.alpha
