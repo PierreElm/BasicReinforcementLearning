@@ -66,7 +66,8 @@ class DQN:
         # Max Q_value for next state over target network
         next_state_tensor = torch.tensor(next_state)
         predicted_values = self.target_network.forward(next_state_tensor)
-        max_q_value = torch.unsqueeze(torch.max(predicted_values, 1)[0], 1)
+        max_index = torch.unsqueeze(torch.argmax(predicted_values, 1), 1)
+        max_q_value = torch.gather(self.q_network.forward(next_state_tensor), 1, max_index)
 
         # Expected discounted sum of future rewards
         q_value_tensor = torch.tensor(reward) + self.discount_factor * max_q_value
