@@ -10,12 +10,12 @@ if __name__ == "__main__":
 
     # This determines whether the environment will be displayed on each each step.
     # When we train your code for the 10 minute period, we will not display the environment.
-    display_on = True
+    display_on = False
 
     # Create a random seed, which will define the environment
     random_seed = int(time.time())
     print(random_seed)
-    np.random.seed(random_seed)
+    np.random.seed(1573913661)
 
     # Create a random environment
     environment = Environment(magnification=500)

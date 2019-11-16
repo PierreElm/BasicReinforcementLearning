@@ -50,14 +50,14 @@ class DQN:
         # Set all the gradients stored in the optimiser to zero.
         self.optimiser.zero_grad()
         # Calculate the loss for this transition.
-        loss, weight = self._calculate_loss(transition)
+        loss = self._calculate_loss(transition)
         # Compute the gradients based on this loss, i.e. the gradients of the loss with respect to the Q-network
         # parameters.
         loss.backward()
         # Take one gradient step to update the Q-network.
         self.optimiser.step()
         # Return the loss as a scalar
-        return loss.item(), weight
+        return loss.item()
 
     # Function to calculate the loss for a particular transition.
     def _calculate_loss(self, transition):
@@ -77,8 +77,6 @@ class DQN:
         network_prediction = self.q_network.forward(state_tensor)
         predicted_q_value = torch.gather(network_prediction, 1, torch.tensor(action))
 
-        weight = (q_value_tensor - predicted_q_value).detach().numpy()
-
         # Return the loss
-        return torch.nn.MSELoss()(predicted_q_value, q_value_tensor), weight
+        return torch.nn.MSELoss()(predicted_q_value, q_value_tensor)
 
