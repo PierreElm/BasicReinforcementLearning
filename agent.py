@@ -42,7 +42,7 @@ class Agent:
         # Epsilon
         self.epsilon = 1
         # Delta
-        self.delta = 0.00004
+        self.delta = 0.00006
         self.last_distance = None
         self.last_state = None
         # Random on episode
@@ -79,7 +79,7 @@ class Agent:
                     self.epsilon_episode = 1
             elif np.random.uniform(0, 1) <= self.epsilon or self.state is None:
                 discrete_action = np.random.randint(0, 4, 1)[0]
-                discrete_action = np.random.choice([0, 2, 3])
+                # discrete_action = np.random.choice([0, 2, 3])
                 # Store the discrete action
                 self.action = discrete_action
                 # Decrease epsilon
@@ -88,7 +88,8 @@ class Agent:
                 action = self.discrete_action_to_continuous(discrete_action)
             elif (self.last_state == self.state).all():
                 self.epsilon_episode = 0.8
-                discrete_action = np.random.choice([0, 2, 3])
+                discrete_action = np.random.randint(0, 4, 1)[0]
+                #discrete_action = np.random.choice([0, 2, 3])
                 # Store the discrete action
                 self.action = discrete_action
                 # Convert discrete action into continuous action
