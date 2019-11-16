@@ -13,9 +13,13 @@ if __name__ == "__main__":
     display_on = True
 
     # Create a random seed, which will define the environment
+    # 1573865367
+    # 1573855027 Can reach
+    # 1573910744
+    # 1573912601 - 0.06
     random_seed = int(time.time())
     print(random_seed)
-    np.random.seed(random_seed)
+    np.random.seed(1573913661)
 
     # Create a random environment
     environment = Environment(magnification=500)

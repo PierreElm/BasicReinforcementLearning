@@ -7,8 +7,8 @@ class ReplayBuffer:
 
     # Function to initialise a ReplayBuffer object.
     def __init__(self):
-        self.collection_deque = collections.deque(maxlen=15000)  # Collection of all transitions
-        self.weight_deque = collections.deque(maxlen=15000)  # Collection of weight of transitions
+        self.collection_deque = collections.deque(maxlen=10000)  # Collection of all transitions
+        self.weight_deque = collections.deque(maxlen=10000)  # Collection of weight of transitions
         self.last_indexes = []  # Last indexes used in mini batch
         self.epsilon = 0.001
         self.alpha = 1

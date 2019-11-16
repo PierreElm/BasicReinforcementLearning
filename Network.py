@@ -10,10 +10,10 @@ class Network(torch.nn.Module):
         super(Network, self).__init__()
 
         # Define the network layers. This example network has two hidden layers, each with 100 units.
-        self.layer_1 = torch.nn.Linear(in_features=input_dimension, out_features=200)
-        self.layer_2 = torch.nn.Linear(in_features=200, out_features=300)
-        self.layer_3 = torch.nn.Linear(in_features=300, out_features=200)
-        self.output_layer = torch.nn.Linear(in_features=200, out_features=output_dimension)
+        self.layer_1 = torch.nn.Linear(in_features=input_dimension, out_features=300)
+        self.layer_2 = torch.nn.Linear(in_features=300, out_features=200)
+        self.layer_3 = torch.nn.Linear(in_features=200, out_features=300)
+        self.output_layer = torch.nn.Linear(in_features=300, out_features=output_dimension)
 
     # Function which sends some input data through the network and returns the network's output.
     def forward(self, input):
