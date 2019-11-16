@@ -13,14 +13,21 @@ class Network(torch.nn.Module):
         self.layer_1 = torch.nn.Linear(in_features=input_dimension, out_features=300)
         self.layer_2 = torch.nn.Linear(in_features=300, out_features=200)
         self.layer_3 = torch.nn.Linear(in_features=200, out_features=300)
-        self.output_layer = torch.nn.Linear(in_features=300, out_features=output_dimension)
+
+        # Duel network
+        self.value = torch.nn.Linear(in_features=300, output_dimension=1)
+        self.advantage = torch.nn.Linear(in_features=300, out_features=output_dimension)
 
     # Function which sends some input data through the network and returns the network's output.
     def forward(self, input):
         layer_1_output = self.layer_1(input)
         layer_2_output = torch.sigmoid(self.layer_2(layer_1_output))
         layer_3_output = torch.nn.functional.relu(self.layer_3(layer_2_output))
-        output = self.output_layer(layer_3_output)
+
+        value = self.value(layer_3_output)
+        advantage = self.advantage(layer_3_output)
+
+        output = value + advantage - torch.mean(advantage)
         return output
 
 
