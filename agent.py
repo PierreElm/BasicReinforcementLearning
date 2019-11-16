@@ -34,15 +34,15 @@ class Agent:
         # The action variable stores the latest action which the agent has applied to the environment
         self.action = None
         # The deep Q network
-        self.dqn = DQN(0.9)
+        self.dqn = DQN(0.95)
         # Replay buffer
         self.replay_buffer = ReplayBuffer()
         # Batch size
-        self.batch_size = 450
+        self.batch_size = 100
         # Epsilon
         self.epsilon = 1
         # Delta
-        self.delta = 0.00008
+        self.delta = 0.00004
         self.last_distance = None
         self.last_state = None
         # Random on episode
@@ -67,6 +67,7 @@ class Agent:
         if discrete_action is None:
             if np.random.uniform(0, 1) <= self.epsilon_episode and self.epsilon < 0:
                 discrete_action = np.random.randint(0, 4, 1)[0]
+                discrete_action = np.random.choice([0, 2, 3])
                 # Store the discrete action
                 self.action = discrete_action
                 # Decrease epsilon
@@ -78,6 +79,7 @@ class Agent:
                     self.epsilon_episode = 1
             elif np.random.uniform(0, 1) <= self.epsilon or self.state is None:
                 discrete_action = np.random.randint(0, 4, 1)[0]
+                discrete_action = np.random.choice([0, 2, 3])
                 # Store the discrete action
                 self.action = discrete_action
                 # Decrease epsilon
@@ -86,7 +88,7 @@ class Agent:
                 action = self.discrete_action_to_continuous(discrete_action)
             elif (self.last_state == self.state).all():
                 self.epsilon_episode = 0.8
-                discrete_action = np.random.randint(0, 4, 1)[0]
+                discrete_action = np.random.choice([0, 2, 3])
                 # Store the discrete action
                 self.action = discrete_action
                 # Convert discrete action into continuous action

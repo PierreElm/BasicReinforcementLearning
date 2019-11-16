@@ -16,10 +16,11 @@ if __name__ == "__main__":
     # 1573865367
     # 1573855027 Can reach
     # 1573910744
-    # 1573912601 - 0.06
+    # 1573912601 - Reach 77 steps
+    # 1573913661 - Reach 57 steps
     random_seed = int(time.time())
     print(random_seed)
-    np.random.seed(1573913661)
+    np.random.seed(1573910744)
 
     # Create a random environment
     environment = Environment(magnification=500)

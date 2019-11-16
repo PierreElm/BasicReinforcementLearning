@@ -10,17 +10,19 @@ class Network(torch.nn.Module):
         super(Network, self).__init__()
 
         # Define the network layers. This example network has two hidden layers, each with 100 units.
-        self.layer_1 = torch.nn.Linear(in_features=input_dimension, out_features=300)
-        self.layer_2 = torch.nn.Linear(in_features=300, out_features=200)
-        self.layer_3 = torch.nn.Linear(in_features=200, out_features=300)
-        self.output_layer = torch.nn.Linear(in_features=300, out_features=output_dimension)
+        self.layer_1 = torch.nn.Linear(in_features=input_dimension, out_features=220)
+        self.layer_2 = torch.nn.Linear(in_features=220, out_features=150)
+        self.layer_3 = torch.nn.Linear(in_features=150, out_features=150)
+        self.layer_4 = torch.nn.Linear(in_features=150, out_features=220)
+        self.output_layer = torch.nn.Linear(in_features=220, out_features=output_dimension)
 
     # Function which sends some input data through the network and returns the network's output.
     def forward(self, input):
         layer_1_output = self.layer_1(input)
         layer_2_output = torch.sigmoid(self.layer_2(layer_1_output))
-        layer_3_output = torch.nn.functional.relu(self.layer_3(layer_2_output))
-        output = self.output_layer(layer_3_output)
+        layer_3_output = torch.sigmoid(self.layer_3(layer_2_output))
+        layer_4_output = torch.nn.functional.relu(self.layer_4(layer_3_output))
+        output = self.output_layer(layer_4_output)
         return output
 
 
