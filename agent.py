@@ -47,14 +47,13 @@ class Agent:
         self.last_state = None
         # Random on episode
         self.epsilon_episode = 0
-        self.delta_episode = 0.1
+        self.delta_episode = 0.05
 
     # Function to check whether the agent has reached the end of an episode
     def has_finished_episode(self):
-        if self.num_steps_taken % self.episode_length == 0 or self.last_distance < 0.03:
-            # print(self.epsilon)
+        if self.num_steps_taken % self.episode_length == 0:
+            print(self.epsilon)
             # print(self.last_distance)
-            self.num_steps_taken = 0
             self.epsilon_episode = 0.0
             return True
         else:
@@ -68,6 +67,7 @@ class Agent:
         if discrete_action is None:
             if np.random.uniform(0, 1) <= self.epsilon_episode and self.epsilon < 0:
                 discrete_action = np.random.randint(0, 4, 1)[0]
+                discrete_action = np.random.choice([0, 1, 2, 3], 1, p=[0.3, 0.1, 0.3, 0.3])
                 # Store the discrete action
                 self.action = discrete_action
                 # Decrease epsilon
@@ -89,6 +89,7 @@ class Agent:
             elif (self.last_state == self.state).all():
                 self.epsilon_episode = 0.8
                 discrete_action = np.random.randint(0, 4, 1)[0]
+                discrete_action = np.random.choice([0, 1, 2, 3], 1, p=[0.3, 0.1, 0.3, 0.3])
                 # Store the discrete action
                 self.action = discrete_action
                 # Convert discrete action into continuous action
@@ -135,6 +136,8 @@ class Agent:
 
     # Function that compute the reward
     def compute_reward(self, distance_to_goal):
+        if distance_to_goal < 0.03 and (self.num_steps_taken % self.episode_length) < (self.episode_length - 10):
+            self.num_steps_taken = self.episode_length - 10
         self.last_distance = distance_to_goal
         if distance_to_goal < 0.1:
             return 2 - distance_to_goal

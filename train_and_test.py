@@ -48,7 +48,7 @@ if __name__ == "__main__":
     while True:
         random_seed = int(time.time())
         print('Seed', random_seed)
-        np.random.seed(1573954304)
+        np.random.seed(random_seed)
 
         # Create a random environment
         environment = Environment(magnification=500)
