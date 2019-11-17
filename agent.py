@@ -51,9 +51,10 @@ class Agent:
 
     # Function to check whether the agent has reached the end of an episode
     def has_finished_episode(self):
-        if self.num_steps_taken % self.episode_length == 0:
-            print(self.epsilon)
-            print(self.last_distance)
+        if self.num_steps_taken % self.episode_length == 0 or self.last_distance < 0.03:
+            # print(self.epsilon)
+            # print(self.last_distance)
+            self.num_steps_taken = 0
             self.epsilon_episode = 0.0
             return True
         else:
@@ -78,6 +79,7 @@ class Agent:
                     self.epsilon_episode = 1
             elif np.random.uniform(0, 1) <= self.epsilon or self.state is None:
                 discrete_action = np.random.randint(0, 4, 1)[0]
+                discrete_action = np.random.choice([0, 1, 2, 3], 1, p=[0.3, 0.1, 0.3, 0.3])
                 # Store the discrete action
                 self.action = discrete_action
                 # Decrease epsilon
