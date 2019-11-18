@@ -71,7 +71,7 @@ class Agent:
 
         # Choose random action if the agent stayed still
         elif (self.last_state == self.state).all():
-            discrete_action = np.random.choice([0, 1, 2, 3], 1, p=[0.3, 0.1, 0.3, 0.3])
+            discrete_action = np.random.choice([0, 1, 2, 3], 1, p=[0.29, 0.13, 0.29, 0.29])
             # Store the discrete action
             self.action = discrete_action
             # Convert discrete action into continuous action
