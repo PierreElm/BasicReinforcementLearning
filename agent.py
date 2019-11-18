@@ -47,10 +47,13 @@ class Agent:
         self.last_distance = None
         # The last state we were in, this is used to take random action if we go toward a wall
         self.last_state = None
+        # If we want to stop episode earlier when we have reached the goal
+        self.end_episode = None
 
     # Function to check whether the agent has reached the end of an episode
     def has_finished_episode(self):
-        if self.num_steps_taken % self.episode_length == 0:
+        if self.num_steps_taken % self.episode_length == 0 or self.end_episode == self.num_steps_taken:
+            self.end_episode = None
             return True
         else:
             return False
@@ -124,6 +127,10 @@ class Agent:
     # Function that compute the reward
     def compute_reward(self, distance_to_goal):
         self.last_distance = distance_to_goal
+        # If we reach the goal for the first time in this episode and there is more than 50 steps to take to end episode
+        if distance_to_goal < 0.03 and self.end_episode is None \
+                and (self.episode_length - (self.num_steps_taken % self.episode_length)) > 50:
+            self.end_episode = self.num_steps_taken + 50
         # If we reach an area that is close to the goal, we increase a bit the reward to give more feedback to the agent
         if distance_to_goal < 0.1:
             return 2 - distance_to_goal
