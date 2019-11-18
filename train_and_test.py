@@ -45,10 +45,15 @@ if __name__ == "__main__":
     # 1573995312 - 60 steps
     # 1573995912 - 61 steps
     # 1573996512 - 0.034
+    # 1574034072 - 0.51
+    # 1574034693 - 84 steps
+    # 1574035313 - 60 steps
+    # 1574036393 - 0.657
+    # 1574036993 - 0.87
     while True:
         random_seed = int(time.time())
         print('Seed', random_seed)
-        np.random.seed(random_seed)
+        np.random.seed(1574036993)
 
         # Create a random environment
         environment = Environment(magnification=500)
