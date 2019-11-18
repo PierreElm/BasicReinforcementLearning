@@ -25,7 +25,7 @@ class Agent:
 
     # Function to initialise the agent
     def __init__(self):
-        # Set the episode length (you will need to increase this)
+        # Set the episode length
         self.episode_length = 300
         # Reset the total number of steps which the agent has taken
         self.num_steps_taken = 0
@@ -34,7 +34,7 @@ class Agent:
         # The action variable stores the latest action which the agent has applied to the environment
         self.action = None
         # The deep Q network
-        self.dqn = DQN(0.9)
+        self.dqn = DQN(discount_factor=0.9)
         # Replay buffer
         self.replay_buffer = ReplayBuffer()
         # Batch size
@@ -43,59 +43,43 @@ class Agent:
         self.epsilon = 1
         # Delta
         self.delta = 0.00008
+        # Last distance, this is used to stop the episode earlier if we reach the goal
         self.last_distance = None
+        # The last state we were in, this is used to take random action if we go toward a wall
         self.last_state = None
-        # Random on episode
-        self.epsilon_episode = 0
-        self.delta_episode = 0.05
 
     # Function to check whether the agent has reached the end of an episode
     def has_finished_episode(self):
         if self.num_steps_taken % self.episode_length == 0:
-            print(self.epsilon)
-            # print(self.last_distance)
-            self.epsilon_episode = 0.0
             return True
         else:
             return False
 
-    # Function to get the next action, using whatever method you like
-    def get_next_action(self, state, discrete_action=None):
-        # Here, the action is random, but you can change this
-        #action = np.random.uniform(low=-0.01, high=0.01, size=2).astype(np.float32)
-        # Choose an action with e-greedy policy
-        if discrete_action is None:
-            if np.random.uniform(0, 1) <= self.epsilon_episode and self.epsilon < 0:
-                discrete_action = np.random.randint(0, 4, 1)[0]
-                discrete_action = np.random.choice([0, 1, 2, 3], 1, p=[0.3, 0.1, 0.3, 0.3])
-                # Store the discrete action
-                self.action = discrete_action
-                # Decrease epsilon
-                self.epsilon_episode = max(0, self.epsilon_episode - self.delta_episode)
-                self.epsilon = max(0, self.epsilon - self.delta)
-                # Convert discrete action into continuous action
-                action = self.discrete_action_to_continuous(discrete_action)
-                if (self.last_state == self.state).all():
-                    self.epsilon_episode = 1
-            elif np.random.uniform(0, 1) <= self.epsilon or self.state is None:
-                discrete_action = np.random.randint(0, 4, 1)[0]
-                discrete_action = np.random.choice([0, 1, 2, 3], 1, p=[0.3, 0.1, 0.3, 0.3])
-                # Store the discrete action
-                self.action = discrete_action
-                # Decrease epsilon
-                self.epsilon = max(0, self.epsilon - self.delta)
-                # Convert discrete action into continuous action
-                action = self.discrete_action_to_continuous(discrete_action)
-            elif (self.last_state == self.state).all():
-                self.epsilon_episode = 0.8
-                discrete_action = np.random.randint(0, 4, 1)[0]
-                discrete_action = np.random.choice([0, 1, 2, 3], 1, p=[0.3, 0.1, 0.3, 0.3])
-                # Store the discrete action
-                self.action = discrete_action
-                # Convert discrete action into continuous action
-                action = self.discrete_action_to_continuous(discrete_action)
-            else:
-                action = self.get_greedy_action(self.state)
+    # Function to get the next action
+    def get_next_action(self, state):
+
+        # Choose an action randomly
+        if np.random.uniform(0, 1) <= self.epsilon or self.state is None:
+            # The action we chose is biased, since we know the goal is on the right, we prefer go right, top or down.
+            discrete_action = np.random.choice([0, 1, 2, 3], 1, p=[0.29, 0.13, 0.29, 0.29])
+            # Store the discrete action
+            self.action = discrete_action
+            # Decrease epsilon
+            self.epsilon = max(0, self.epsilon - self.delta)
+            # Convert discrete action into continuous action
+            action = self.discrete_action_to_continuous(discrete_action)
+
+        # Choose random action if the agent stayed still
+        elif (self.last_state == self.state).all():
+            discrete_action = np.random.choice([0, 1, 2, 3], 1, p=[0.3, 0.1, 0.3, 0.3])
+            # Store the discrete action
+            self.action = discrete_action
+            # Convert discrete action into continuous action
+            action = self.discrete_action_to_continuous(discrete_action)
+
+        # Otherwise, we apply the greedy policy
+        else:
+            action = self.get_greedy_action(self.state)
 
         # Update the number of steps which the agent has taken
         self.num_steps_taken += 1
@@ -123,30 +107,35 @@ class Agent:
         reward = self.compute_reward(distance_to_goal)
         # Create a transition
         transition = (self.state, self.action, reward, next_state)
+
         # We add the transition to the replay buffer
         self.replay_buffer.append_transition(transition)
         # We get a sample of transition
         transition = self.replay_buffer.sample_random_replay_batch(self.batch_size)
+
         # Train network with this transition
         if transition is not None:
-            loss, weight = self.dqn.train_q_network(transition)
-        # Every 25 steps, we update the target network
+            self.dqn.train_q_network(transition)
+
+        # Every 150 steps, we update the target network
         if self.num_steps_taken % 150 == 0:
             self.dqn.update_target_network()
 
     # Function that compute the reward
     def compute_reward(self, distance_to_goal):
-        if distance_to_goal < 0.03 and (self.num_steps_taken % self.episode_length) < (self.episode_length - 10):
-            self.num_steps_taken = self.episode_length - 10
         self.last_distance = distance_to_goal
+        # If we reach an area that is close to the goal, we increase a bit the reward to give more feedback to the agent
         if distance_to_goal < 0.1:
             return 2 - distance_to_goal
+        # Otherwise we use the original reward that seems to perform well on different environment
         return 1 - distance_to_goal
 
     # Function to get the greedy action for a particular state
     def get_greedy_action(self, state):
         state_tensor = torch.unsqueeze(torch.tensor(state), 0)
+        # We get the prediction of the network
         predicted_values = self.dqn.q_network.forward(state_tensor).cpu().detach().numpy()
+        # We get the best discrete action
         discrete_action = np.argmax(predicted_values)
         # Store the discrete action
         self.action = discrete_action
