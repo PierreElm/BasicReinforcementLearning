@@ -10,7 +10,7 @@ if __name__ == "__main__":
 
     # This determines whether the environment will be displayed on each each step.
     # When we train your code for the 10 minute period, we will not display the environment.
-    display_on = True
+    display_on = False
 
     # Create a random seed, which will define the environment
     # 1573865367 - 0.63
@@ -50,10 +50,12 @@ if __name__ == "__main__":
     # 1574035313 - 60 steps
     # 1574036393 - 0.657
     # 1574036993 - 0.87
-    while True:
+    envs = [1573989311, 123456, 1574035313, 1573996512, 1573934726]
+    reach = {}
+    for env in envs:
         random_seed = int(time.time())
-        print('Seed', random_seed)
-        np.random.seed(1574036993)
+        print('Seed', env)
+        np.random.seed(env)
 
         # Create a random environment
         environment = Environment(magnification=500)
@@ -100,12 +102,15 @@ if __name__ == "__main__":
 
         # Print out the result
         if has_reached_goal:
+            reach[env] = 'reached'
             print('Reached goal in ' + str(step_num) + ' steps.')
         else:
             print('Did not reach goal. Final distance = ' + str(distance_to_goal))
+            reach[env] = distance_to_goal
     #
     # import os
     #
     # duration = 1  # seconds
     # freq = 200  # Hz
     # os.system('play -nq -t alsa synth {} sine {}'.format(duration, freq))
+    print(reach)

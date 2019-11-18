@@ -47,13 +47,20 @@ class Agent:
         self.last_distance = None
         # The last state we were in, this is used to take random action if we go toward a wall
         self.last_state = None
-        # If we want to stop episode earlier when we have reached the goal
-        self.end_episode = None
+        self.random = False
+        self.step_to_goal = 300
+        self.reached_goal = False
+        self.flag = False
 
     # Function to check whether the agent has reached the end of an episode
     def has_finished_episode(self):
-        if self.num_steps_taken % self.episode_length == 0 or self.end_episode == self.num_steps_taken:
-            self.end_episode = None
+        if (self.num_steps_taken % self.episode_length) == 0:
+            print(self.epsilon)
+            print(self.last_distance)
+            self.flag = (self.epsilon == 0 and self.step_to_goal <= 100 and self.random is False and self.reached_goal)
+            self.random = False
+            self.reached_goal = False
+            print(self.step_to_goal)
             return True
         else:
             return False
@@ -62,23 +69,26 @@ class Agent:
     def get_next_action(self, state):
 
         # Choose an action randomly
-        if np.random.uniform(0, 1) <= self.epsilon or self.state is None:
+        if np.random.uniform(0, 1) < self.epsilon:
             # The action we chose is biased, since we know the goal is on the right, we prefer go right, top or down.
-            discrete_action = np.random.choice([0, 1, 2, 3], 1, p=[0.29, 0.13, 0.29, 0.29])
+            discrete_action = np.random.randint(0, 4, 1)[0]
             # Store the discrete action
             self.action = discrete_action
             # Decrease epsilon
             self.epsilon = max(0, self.epsilon - self.delta)
+            if self.epsilon < 0.1:
+                self.epsilon = 0
             # Convert discrete action into continuous action
             action = self.discrete_action_to_continuous(discrete_action)
 
         # Choose random action if the agent stayed still
-        elif (self.last_state == self.state).all():
-            discrete_action = np.random.choice([0, 1, 2, 3], 1, p=[0.29, 0.13, 0.29, 0.29])
+        elif (self.last_state == self.state).all() and self.step_to_goal > 100:
+            discrete_action = np.random.randint(0, 4, 1)[0]
             # Store the discrete action
             self.action = discrete_action
             # Convert discrete action into continuous action
             action = self.discrete_action_to_continuous(discrete_action)
+            self.random = True
 
         # Otherwise, we apply the greedy policy
         else:
@@ -117,7 +127,7 @@ class Agent:
         transition = self.replay_buffer.sample_random_replay_batch(self.batch_size)
 
         # Train network with this transition
-        if transition is not None:
+        if transition is not None and self.flag is False:
             self.dqn.train_q_network(transition)
 
         # Every 150 steps, we update the target network
@@ -126,11 +136,11 @@ class Agent:
 
     # Function that compute the reward
     def compute_reward(self, distance_to_goal):
+        if distance_to_goal < 0.03 and self.step_to_goal > 100 and self.epsilon == 0 and self.random is False:
+            self.step_to_goal = self.num_steps_taken % self.episode_length
+        if distance_to_goal < 0.03 and self.step_to_goal <= 100 and self.random is False:
+            self.reached_goal = True
         self.last_distance = distance_to_goal
-        # If we reach the goal for the first time in this episode and there is more than 50 steps to take to end episode
-        if distance_to_goal < 0.03 and self.end_episode is None \
-                and (self.episode_length - (self.num_steps_taken % self.episode_length)) > 50:
-            self.end_episode = self.num_steps_taken + 50
         # If we reach an area that is close to the goal, we increase a bit the reward to give more feedback to the agent
         if distance_to_goal < 0.1:
             return 2 - distance_to_goal
