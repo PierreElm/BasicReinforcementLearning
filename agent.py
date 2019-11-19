@@ -42,7 +42,7 @@ class Agent:
         # Epsilon
         self.epsilon = 1
         # Delta
-        self.delta = 0.00008
+        self.delta = 0.00004
         # Last distance, this is used to stop the episode earlier if we reach the goal
         self.last_distance = None
         # The last state we were in, this is used to take random action if we go toward a wall
@@ -57,7 +57,7 @@ class Agent:
         if (self.num_steps_taken % self.episode_length) == 0:
             print(self.epsilon)
             print(self.last_distance)
-            self.flag = (self.epsilon == 0 and self.step_to_goal <= 100 and self.random is False and self.reached_goal)
+            self.flag = self.reached_goal
             self.random = False
             self.reached_goal = False
             print(self.step_to_goal)
@@ -67,9 +67,8 @@ class Agent:
 
     # Function to get the next action
     def get_next_action(self, state):
-
         # Choose an action randomly
-        if np.random.uniform(0, 1) < self.epsilon:
+        if np.random.uniform(0, 1) < self.epsilon and self.reached_goal is False:
             # The action we chose is biased, since we know the goal is on the right, we prefer go right, top or down.
             discrete_action = np.random.randint(0, 4, 1)[0]
             # Store the discrete action
@@ -80,10 +79,14 @@ class Agent:
                 self.epsilon = 0
             # Convert discrete action into continuous action
             action = self.discrete_action_to_continuous(discrete_action)
+            self.random = True
 
         # Choose random action if the agent stayed still
-        elif (self.last_state == self.state).all() and self.step_to_goal > 100:
+        elif (self.last_state == self.state).all() and self.reached_goal is False:
             discrete_action = np.random.randint(0, 4, 1)[0]
+            self.epsilon = max(0, self.epsilon - self.delta)
+            if self.epsilon < 0.1:
+                self.epsilon = 0
             # Store the discrete action
             self.action = discrete_action
             # Convert discrete action into continuous action
@@ -136,10 +139,13 @@ class Agent:
 
     # Function that compute the reward
     def compute_reward(self, distance_to_goal):
-        if distance_to_goal < 0.03 and self.step_to_goal > 100 and self.epsilon == 0 and self.random is False:
-            self.step_to_goal = self.num_steps_taken % self.episode_length
-        if distance_to_goal < 0.03 and self.step_to_goal <= 100 and self.random is False:
+        # Check if we reach the goal with optimal policy
+        nb_steps = self.num_steps_taken % self.episode_length
+        if distance_to_goal < 0.03 and self.random is False and 0 < nb_steps <= 100 and self.reached_goal is False:
+            print(distance_to_goal)
+            self.step_to_goal = nb_steps
             self.reached_goal = True
+
         self.last_distance = distance_to_goal
         # If we reach an area that is close to the goal, we increase a bit the reward to give more feedback to the agent
         if distance_to_goal < 0.1:
