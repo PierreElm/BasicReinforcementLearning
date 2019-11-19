@@ -38,11 +38,11 @@ class Agent:
         # Replay buffer
         self.replay_buffer = ReplayBuffer()
         # Batch size
-        self.batch_size = 100
+        self.batch_size = 128
         # Epsilon
         self.epsilon = 1
         # Delta
-        self.delta = 0.00008
+        self.delta = 0.00007
         # Last distance, this is used to stop the episode earlier if we reach the goal
         self.last_distance = None
         # The last state we were in, this is used to take random action if we go toward a wall
@@ -61,7 +61,7 @@ class Agent:
         # Choose an action randomly
         if np.random.uniform(0, 1) <= self.epsilon or self.state is None:
             # The action we chose is biased, since we know the goal is on the right, we prefer go right, top or down.
-            discrete_action = np.random.choice([0, 1, 2, 3], 1, p=[0.29, 0.13, 0.29, 0.29])
+            discrete_action = np.random.choice([0, 1, 2, 3], 1, p=[0.28, 0.16, 0.28, 0.28])
             # Store the discrete action
             self.action = discrete_action
             # Decrease epsilon
@@ -71,7 +71,9 @@ class Agent:
 
         # Choose random action if the agent stayed still
         elif (self.last_state == self.state).all():
-            discrete_action = np.random.choice([0, 1, 2, 3], 1, p=[0.29, 0.13, 0.29, 0.29])
+            discrete_action = np.random.choice([0, 1, 2, 3], 1, p=[0.28, 0.16, 0.28, 0.28])
+            # Decrease epsilon
+            self.epsilon = max(0, self.epsilon - self.delta)
             # Store the discrete action
             self.action = discrete_action
             # Convert discrete action into continuous action

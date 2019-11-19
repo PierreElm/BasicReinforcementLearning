@@ -12,7 +12,8 @@ class Network(torch.nn.Module):
         # Define the network layers using the decoder model
         self.layer_1 = torch.nn.Linear(in_features=input_dimension, out_features=310)
         self.layer_2 = torch.nn.Linear(in_features=310, out_features=245)
-        self.layer_3 = torch.nn.Linear(in_features=245, out_features=310)
+        self.layer_3 = torch.nn.Linear(in_features=245, out_features=245)
+        self.layer_4 = torch.nn.Linear(in_features=245, out_features=310)
 
         # Duel network
         self.value = torch.nn.Linear(in_features=310, out_features=1)
@@ -23,11 +24,12 @@ class Network(torch.nn.Module):
         # Activation functions
         layer_1_output = self.layer_1(input)
         layer_2_output = torch.sigmoid(self.layer_2(layer_1_output))
-        layer_3_output = torch.nn.functional.relu(self.layer_3(layer_2_output))
+        layer_3_output = torch.sigmoid(self.layer_3(layer_2_output))
+        layer_4_output = torch.nn.functional.relu(self.layer_4(layer_3_output))
 
         # Duel network
-        value = self.value(layer_3_output)
-        advantage = self.advantage(layer_3_output)
+        value = self.value(layer_4_output)
+        advantage = self.advantage(layer_4_output)
         output = value + advantage - torch.mean(advantage)
 
         return output

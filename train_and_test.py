@@ -10,7 +10,7 @@ if __name__ == "__main__":
 
     # This determines whether the environment will be displayed on each each step.
     # When we train your code for the 10 minute period, we will not display the environment.
-    display_on = True
+    display_on = False
 
     # Create a random seed, which will define the environment
     # 1573865367 - 0.63
@@ -50,6 +50,8 @@ if __name__ == "__main__":
     # 1574035313 - 60 steps
     # 1574036393 - 0.657
     # 1574036993 - 0.87
+
+    envs = [1573994112, 1573996512, 1574035313, 1574034693]
     while True:
         random_seed = int(time.time())
         print('Seed', random_seed)
