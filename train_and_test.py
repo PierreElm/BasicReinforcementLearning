@@ -2,7 +2,7 @@ import time
 import numpy as np
 
 from random_environment import Environment
-from agent_1741124 import Agent
+from agent import Agent
 
 
 # Main entry point
@@ -10,7 +10,7 @@ if __name__ == "__main__":
 
     # This determines whether the environment will be displayed on each each step.
     # When we train your code for the 10 minute period, we will not display the environment.
-    display_on = False
+    display_on = True
 
     # Create a random seed, which will define the environment
     # 1573865367 - 0.63
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     for i in range(7):
         random_seed = int(time.time())
         print('Seed', random_seed)
-        np.random.seed(random_seed)
+        np.random.seed(1574272178)
 
         # Create a random environment
         environment = Environment(magnification=500)
