@@ -50,8 +50,6 @@ class Agent:
         # The last state we were in, this is used to take random action if we go toward a wall
         self.last_state = None
         # Evaluate greedy policy
-        self.random = False
-        self.step_to_goal = 300
         self.reached_goal = False
         self.reached_goal_in_row = 0
         self.greedy = False
@@ -73,10 +71,9 @@ class Agent:
 
             # If we reached the goal 10 times in a row, we try to apply greedy policy
             if self.reached_goal_in_row >= 3:
-                self.greedy = False
+                self.greedy = True
             else:
                 self.greedy = False
-            print(self.epsilon)
             return True
         else:
             return False
@@ -86,28 +83,27 @@ class Agent:
         # Choose an action randomly
         if np.random.uniform(0, 1) < self.epsilon and self.greedy is False:
             # The action we chose is biased, since we know the goal is on the right, we prefer go right, top or down.
-            discrete_action = np.random.randint(0, 4, 1)[0]
+            discrete_action = np.random.choice([0, 1, 2, 3], 1, p=[0.28, 0.16, 0.28, 0.28])
             # Store the discrete action
             self.action = discrete_action
             # Decrease epsilon
             self.epsilon = max(0, self.epsilon - self.delta)
             # Convert discrete action into continuous action
             action = self.discrete_action_to_continuous(discrete_action)
-            self.random = True
 
         # Choose random action if the agent stayed still
-        elif (self.last_state == self.state).all() and self.greedy is False and False:
-            discrete_action = np.random.randint(0, 4, 1)[0]
+        elif (self.last_state == self.state).all() and self.greedy is False:
+            # The action we chose is biased, since we know the goal is on the right, we prefer go right, top or down.
+            discrete_action = np.random.choice([0, 1, 2, 3], 1, p=[0.28, 0.16, 0.28, 0.28])
             self.epsilon = max(0, self.epsilon - self.delta)
             # Store the discrete action
             self.action = discrete_action
             # Convert discrete action into continuous action
             action = self.discrete_action_to_continuous(discrete_action)
-            self.random = True
 
         # Otherwise, we apply the greedy policy
         else:
-            action = self.get_greedy_action(self.state)
+            action = self.get_greedy_action(state)
 
         # Update the number of steps which the agent has taken
         self.num_steps_taken += 1
@@ -158,7 +154,7 @@ class Agent:
         self.last_distance = distance_to_goal
         # If we reach an area that is close to the goal, we increase a bit the reward to give more feedback to the agent
         if distance_to_goal < 0.03:
-            return 5
+            return 2
         # Otherwise we use the original reward that seems to perform well on different environment
         return -distance_to_goal
 
