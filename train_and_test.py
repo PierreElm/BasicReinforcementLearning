@@ -2,7 +2,7 @@ import time
 import numpy as np
 
 from random_environment import Environment
-from agent import Agent
+from agent_1741124 import Agent
 
 
 # Main entry point
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     # 1574036993 - 0.87
     envs = [1573913661, 1573989311, 123456, 1574035313, 1573996512, 1573934726]
     reach = {}
-    for i in range(5):
+    for i in range(7):
         random_seed = int(time.time())
         print('Seed', random_seed)
         np.random.seed(random_seed)
@@ -93,7 +93,6 @@ if __name__ == "__main__":
         for step_num in range(100):
             action = agent.get_greedy_action(state)
             next_state, distance_to_goal = environment.step(state, action)
-            print(state)
             # The agent must achieve a maximum distance of 0.03 for use to consider it "reaching the goal"
             if distance_to_goal < 0.03:
                 has_reached_goal = True
