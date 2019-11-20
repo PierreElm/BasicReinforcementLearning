@@ -7,7 +7,7 @@ class ReplayBuffer:
 
     # Function to initialise a ReplayBuffer object.
     def __init__(self):
-        self.collection_deque = collections.deque(maxlen=10000)  # Collection of all transitions
+        self.collection_deque = collections.deque(maxlen=15000)  # Collection of all transitions
 
     # Append a transition to the deque.
     def append_transition(self, transition):
